@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Hero Academia - Fighting Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="1200" height="600"></canvas>
+        
+        <div id="hud">
+            <div id="player1Info" class="playerInfo">
+                <h3>All For One</h3>
+                <div class="healthBar">
+                    <div id="player1Health" class="health"></div>
+                </div>
+                <div class="stats">
+                    <p>Quirks: <span id="quirksCount1">100</span></p>
+                    <p>Mode: <span id="mode1">Normal</span></p>
+                </div>
+            </div>
+
+            <div id="gameStatus">
+                <h2 id="statusText">FIGHT START!</h2>
+            </div>
+
+            <div id="player2Info" class="playerInfo">
+                <h3>One For All</h3>
+                <div class="healthBar">
+                    <div id="player2Health" class="health"></div>
+                </div>
+                <div class="stats">
+                    <p>Vestiges: <span id="vestiges">8</span></p>
+                    <p>Power: <span id="ofa-power">100%</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="controls">
+            <p><strong>All For One (P1):</strong> W/A/S/D - Move | Q - Quirk Storage | E - Air Blast | R - Super Strength | T - Super Speed | Y - Take Over Mode</p>
+            <p><strong>One For All (P2):</strong> Arrow Keys - Move | 1-5 - Moves | U - Vestige Connection | I - Vestige Combo</p>
+        </div>
+
+        <div id="quirksPanel" class="panel">
+            <h3>Quirk Combinations Available</h3>
+            <div id="quirksDisplay"></div>
+        </div>
+
+        <div id="vestigesPanel" class="panel">
+            <h3>Vestiges</h3>
+            <div id="vestigesDisplay"></div>
+        </div>
+    </div>
+
+    <script src="sprites.js"></script>
+    <script src="quirks.js"></script>
+    <script src="characters.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
