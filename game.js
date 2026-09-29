@@ -27,14 +27,15 @@ function resetBattle() {
   p1.maxHealth = 100;
   p1.mode = 'Normal';
   p1.speed = 5;
+  p1.x = 180;
+  p1.y = 420;
+
   p2.health = 100;
   p2.maxHealth = 100;
   p2.power = 100;
-  p1.x = 180;
-  p1.y = 420;
   p2.x = 940;
   p2.y = 420;
-  statusText = 'FIGHT!';
+
   ui.status.textContent = 'FIGHT!';
   updateHud();
 }
@@ -125,12 +126,64 @@ function drawArena() {
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = '#0b1220';
+  const arenaCenterX = canvas.width / 2;
+  const arenaCenterY = 300;
+  const outerR = 270;
+  const innerR = 170;
+
+  ctx.fillStyle = '#2ca54c';
+  ctx.beginPath();
+  ctx.arc(arenaCenterX, arenaCenterY, innerR, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#5a4f9f';
+  ctx.beginPath();
+  ctx.arc(arenaCenterX, arenaCenterY, outerR, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#2c2c2c';
+  for (let i = 0; i < 52; i++) {
+    const angle = (Math.PI * 2 * i) / 52;
+    const r = outerR - 20;
+    const sx = arenaCenterX + Math.cos(angle) * r;
+    const sy = arenaCenterY + Math.sin(angle) * r;
+    const ex = arenaCenterX + Math.cos(angle) * (outerR + 34);
+    const ey = arenaCenterY + Math.sin(angle) * (outerR + 34);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.strokeStyle = '#2d2d2d';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = '#2d2d2d';
+  ctx.beginPath();
+  ctx.arc(arenaCenterX, arenaCenterY, outerR + 18, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = '#22313f';
   ctx.fillRect(0, 500, canvas.width, 120);
 
-  for (let i = 0; i < 20; i++) {
-    ctx.fillStyle = i % 2 === 0 ? '#1a2d44' : '#20344a';
-    ctx.fillRect(i * 60, 500, 50, 120);
+  ctx.strokeStyle = '#d1d5db';
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(0, 500);
+  ctx.lineTo(canvas.width, 500);
+  ctx.stroke();
+
+  ctx.fillStyle = '#0b1220';
+  ctx.beginPath();
+  ctx.arc(arenaCenterX, arenaCenterY, innerR - 22, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let i = 0; i < 200; i++) {
+    const angle = (Math.PI * 2 * i) / 200;
+    const dist = 160 + (i % 3) * 16;
+    const x = arenaCenterX + Math.cos(angle) * dist;
+    const y = arenaCenterY + Math.sin(angle) * dist;
+    ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f59e0b';
+    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
   }
 }
 
@@ -190,15 +243,21 @@ function drawEffects() {
 function loop() {
   handleInput();
   drawArena();
-  drawCharacter(p1, '#a855f7', '#f5d0fe');
-  drawCharacter(p2, '#34d399', '#d1fae5');
-  drawEffects();
+  if (started) {
+    drawCharacter(p1, '#a855f7', '#f5d0fe');
+    drawCharacter(p2, '#34d399', '#d1fae5');
+    drawEffects();
 
-  if (p1.health <= 0) {
-    ui.status.textContent = 'ONE FOR ALL WINS!';
-  }
-  if (p2.health <= 0) {
-    ui.status.textContent = 'ALL FOR ONE WINS!';
+    if (p1.health <= 0) {
+      ui.status.textContent = 'ONE FOR ALL WINS!';
+      started = false;
+      menu.classList.remove('hidden');
+    }
+    if (p2.health <= 0) {
+      ui.status.textContent = 'ALL FOR ONE WINS!';
+      started = false;
+      menu.classList.remove('hidden');
+    }
   }
 
   updateHud();
