@@ -6,36 +6,48 @@ class Vestige {
 }
 
 class CharacterBase {
-  constructor(name, x, y, color, facing = 1) {
+  constructor(name, x, y, color, glow) {
     this.name = name;
     this.x = x;
     this.y = y;
     this.w = 80;
     this.h = 120;
     this.color = color;
-    this.facing = facing;
+    this.glow = glow;
     this.health = 100;
     this.maxHealth = 100;
     this.speed = 5;
-    this.vx = 0;
-    this.grounded = true;
+    this.spriteSheet = new SpriteSheet(name === 'All For One' ? 'allforone' : 'oneforall');
   }
 
   attack(target, amount, effectColor = '#ffffff') {
     target.health = Math.max(0, target.health - amount);
+    this.spriteSheet.playAttack();
     spawnEffect(target.x + target.w / 2, target.y + target.h / 2, effectColor, 24, 'burst');
     return target.health;
+  }
+
+  playSpecialAttack() {
+    this.spriteSheet.playSpecial();
+  }
+
+  updateAnimation() {
+    if (this.spriteSheet.isAnimating) {
+      this.spriteSheet.updateAttack();
+    } else {
+      this.spriteSheet.updateIdle();
+    }
   }
 }
 
 class AllForOne extends CharacterBase {
   constructor(x, y) {
-    super('All For One', x, y, '#7c3aed', 1);
+    super('All For One', x, y, '#7c3aed', '#a855f7');
     this.mode = 'Normal';
     this.quirkStorage = [];
-    this.quirkCount = 100;
+    this.quirkCount = 25;
     for (let i = 0; i < 25; i++) {
-      this.quirkStorage.push(Object.keys(MHA_QUIRKS)[i % Object.keys(MHA_QUIRKS).length]);
+      this.quirkStorage.push(QUIRK_KEYS[i % QUIRK_KEYS.length]);
     }
   }
 
@@ -47,6 +59,7 @@ class AllForOne extends CharacterBase {
 
   takeOverMode() {
     this.mode = 'Take Over';
+    this.playSpecialAttack();
     this.health = Math.min(this.maxHealth, this.health + 15);
     this.quirkCount = 100;
   }
@@ -54,7 +67,7 @@ class AllForOne extends CharacterBase {
 
 class OneForAll extends CharacterBase {
   constructor(x, y) {
-    super('One For All', x, y, '#10b981', -1);
+    super('One For All', x, y, '#10b981', '#34d399');
     this.power = 100;
     this.vestiges = [
       new Vestige('En', 10),
@@ -81,6 +94,7 @@ class OneForAll extends CharacterBase {
 
   vestigeCombo(target) {
     const total = this.vestiges.reduce((sum, v) => sum + v.bonus, 0);
+    this.playSpecialAttack();
     target.health = Math.max(0, target.health - (10 + total / 4));
     this.power = Math.min(200, this.power + 5);
     return total;

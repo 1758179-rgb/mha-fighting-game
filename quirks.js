@@ -1,5 +1,4 @@
 const MHA_QUIRKS = {
-  // Hero-style quirks
   oneforall: { name: 'One For All', type: 'ultimate', damage: 26, speed: 1.3, color: '#7ef9a9', cost: 0 },
   blackwhip: { name: 'Black Whip', type: 'range', damage: 18, speed: 1.2, color: '#d4d4d4', cost: 8 },
   float: { name: 'Float', type: 'mobility', damage: 7, speed: 1.5, color: '#9ae6ff', cost: 6 },
@@ -9,7 +8,7 @@ const MHA_QUIRKS = {
   erasure: { name: 'Erasure', type: 'control', damage: 10, speed: 0.9, color: '#7e7dff', cost: 12 },
   creation: { name: 'Creation', type: 'utility', damage: 14, speed: 1.1, color: '#facc15', cost: 10 },
   explosion: { name: 'Explosion', type: 'burst', damage: 22, speed: 1.0, color: '#f97316', cost: 11 },
-  entropy: { name: 'Decay', type: 'damage', damage: 17, speed: 1.2, color: '#a3e635', cost: 9 },
+  decay: { name: 'Decay', type: 'damage', damage: 17, speed: 1.2, color: '#a3e635', cost: 9 },
   magnetism: { name: 'Magnetism', type: 'control', damage: 16, speed: 1.1, color: '#93c5fd', cost: 8 },
   fire: { name: 'Fire Breath', type: 'burst', damage: 15, speed: 1.1, color: '#fb923c', cost: 8 },
   ice: { name: 'Ice', type: 'control', damage: 12, speed: 1.0, color: '#67e8f9', cost: 7 },
@@ -29,10 +28,14 @@ const MHA_QUIRKS = {
   gravity: { name: 'Gravity', type: 'range', damage: 20, speed: 1.0, color: '#d8b4fe', cost: 12 }
 };
 
-const QUIRK_LIST = Object.keys(MHA_QUIRKS);
+const QUIRK_KEYS = Object.keys(MHA_QUIRKS);
 
 function getRandomQuirk() {
-  return QUIRK_LIST[Math.floor(Math.random() * QUIRK_LIST.length)];
+  return QUIRK_KEYS[Math.floor(Math.random() * QUIRK_KEYS.length)];
+}
+
+function getQuirkData(id) {
+  return MHA_QUIRKS[id] || MHA_QUIRKS.oneforall;
 }
 
 function buildComboSet() {
@@ -40,11 +43,7 @@ function buildComboSet() {
   for (let i = 0; i < 25; i++) {
     const q1 = getRandomQuirk();
     const q2 = getRandomQuirk();
-    combos.push({ name: `${MHA_QUIRKS[q1].name} + ${MHA_QUIRKS[q2].name}`, bonus: 8 + i % 5 });
+    combos.push({ name: `${getQuirkData(q1).name} + ${getQuirkData(q2).name}`, bonus: 8 + (i % 5) });
   }
   return combos;
-}
-
-function getQuirkData(id) {
-  return MHA_QUIRKS[id] || MHA_QUIRKS.oneforall;
 }

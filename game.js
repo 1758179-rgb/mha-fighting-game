@@ -29,19 +29,21 @@ function resetBattle() {
   p1.speed = 5;
   p1.x = 180;
   p1.y = 420;
+  p1.spriteSheet = new SpriteSheet('allforone');
 
   p2.health = 100;
   p2.maxHealth = 100;
   p2.power = 100;
   p2.x = 940;
   p2.y = 420;
+  p2.spriteSheet = new SpriteSheet('oneforall');
 
   ui.status.textContent = 'FIGHT!';
   updateHud();
 }
 
 function spawnEffect(x, y, color, radius = 20, type = 'burst') {
-  effects.push({ x, y, color, radius, type, life: 28 });
+  effects.push({ x, y, color, radius, type, life: 28, maxLife: 28 });
 }
 
 function updateHud() {
@@ -67,17 +69,15 @@ function handleInput() {
   if (keys['ArrowDown']) p2.y = Math.min(470, p2.y + 8);
 
   if (keys['e']) {
-    p2.health = Math.max(0, p2.health - 15);
+    p1.attack(p2, 15, '#7dd3fc');
     p1.mode = 'Air Blast';
     ui.status.textContent = 'AIR BLAST!';
-    spawnEffect(p1.x + 90, p1.y + 50, '#7dd3fc', 30, 'burst');
   }
 
   if (keys['r']) {
-    p2.health = Math.max(0, p2.health - 18);
+    p1.attack(p2, 18, '#f97316');
     p1.mode = 'Super Strength';
     ui.status.textContent = 'SUPER STRENGTH!';
-    spawnEffect(p1.x + 90, p1.y + 50, '#f97316', 28, 'burst');
   }
 
   if (keys['t']) {
@@ -101,11 +101,11 @@ function handleInput() {
     ui.status.textContent = 'QUIRK STORAGE: ' + p1.quirkStorage.slice(0, 10).join(', ');
   }
 
-  if (keys['1']) { p2.health = Math.max(0, p2.health - 12); ui.status.textContent = 'ONE FOR ALL SMASH'; }
-  if (keys['2']) { p2.health = Math.max(0, p2.health - 14); ui.status.textContent = 'AIR BURST'; }
-  if (keys['3']) { p2.health = Math.max(0, p2.health - 17); ui.status.textContent = 'VESTIGE BREAKER'; }
-  if (keys['4']) { p2.health = Math.max(0, p2.health - 19); ui.status.textContent = 'LIGHTNING RUSH'; }
-  if (keys['5']) { p2.health = Math.max(0, p2.health - 22); ui.status.textContent = 'SPIRITUAL BURST'; }
+  if (keys['1']) { p2.attack(p1, 12, '#7ef9a9'); ui.status.textContent = 'ONE FOR ALL SMASH'; }
+  if (keys['2']) { p2.attack(p1, 14, '#00f5d4'); ui.status.textContent = 'AIR BURST'; }
+  if (keys['3']) { p2.attack(p1, 17, '#90f1ef'); ui.status.textContent = 'VESTIGE BREAKER'; }
+  if (keys['4']) { p2.attack(p1, 19, '#60a5fa'); ui.status.textContent = 'LIGHTNING RUSH'; }
+  if (keys['5']) { p2.attack(p1, 22, '#7ef9a9'); ui.status.textContent = 'SPIRITUAL BURST'; }
 
   if (keys['u']) {
     ui.status.textContent = p2.spiritualAdvice();
@@ -113,7 +113,7 @@ function handleInput() {
 
   if (keys['i']) {
     const damage = p2.vestigeCombo(p1);
-    ui.status.textContent = `VESTIGE COMBO! ${damage} damage`;
+    ui.status.textContent = `VESTIGE COMBO! ${Math.round(damage)} damage`;
     spawnEffect(p2.x - 40, p2.y + 50, '#00f5d4', 32, 'burst');
   }
 }
@@ -187,55 +187,58 @@ function drawArena() {
   }
 }
 
-function drawCharacter(ch, accent, faceColor = '#f4d29d') {
+function drawCharacter(ch, isFacingRight = true) {
   ctx.save();
   ctx.translate(ch.x, ch.y);
 
-  ctx.fillStyle = accent;
-  ctx.globalAlpha = 0.18;
-  ctx.fillRect(-10, 0, ch.w + 20, ch.h + 20);
+  if (!isFacingRight) {
+    ctx.scale(-1, 1);
+    ctx.translate(-ch.w, 0);
+  }
 
-  ctx.fillStyle = faceColor;
+  // Draw glow
+  ctx.fillStyle = ch.glow;
+  ctx.globalAlpha = 0.15;
   ctx.beginPath();
-  ctx.arc(ch.w / 2, 30, 18, 0, Math.PI * 2);
+  ctx.arc(ch.w / 2, ch.h / 2, ch.w / 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // Draw character body (animated)
+  const frame = ch.spriteSheet.getCurrentFrame();
+  if (frame) {
+    ctx.fillStyle = ch.color;
+    ctx.globalAlpha = 0.95;
+    ctx.fillRect(5, 10, ch.w - 10, ch.h - 20);
+    ctx.globalAlpha = 1;
+  }
+
+  // Draw character details
+  ctx.fillStyle = '#f4d29d';
+  ctx.beginPath();
+  ctx.arc(ch.w / 2, 25, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = ch.color;
-  ctx.fillRect(ch.w * 0.28, 52, ch.w * 0.44, 52);
-
-  ctx.fillStyle = accent;
-  ctx.beginPath();
-  ctx.moveTo(ch.w * 0.25, 58);
-  ctx.lineTo(0, 100);
-  ctx.lineTo(5, ch.h);
-  ctx.lineTo(ch.w * 0.35, ch.h);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.moveTo(ch.w * 0.75, 58);
-  ctx.lineTo(ch.w, 100);
-  ctx.lineTo(ch.w - 5, ch.h);
-  ctx.lineTo(ch.w * 0.65, ch.h);
-  ctx.fill();
-
+  // Eyes
   ctx.fillStyle = '#111827';
-  ctx.fillRect(ch.w * 0.38, 23, 8, 8);
-  ctx.fillRect(ch.w * 0.54, 23, 8, 8);
+  ctx.fillRect(ch.w * 0.35, 20, 6, 6);
+  ctx.fillRect(ch.w * 0.59, 20, 6, 6);
 
   ctx.restore();
 }
 
 function drawEffects() {
-  const arr = effects.slice();
-  for (let i = arr.length - 1; i >= 0; i--) {
-    const e = arr[i];
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects[i];
     e.life -= 1;
+
     ctx.beginPath();
     ctx.fillStyle = e.color;
-    ctx.globalAlpha = Math.max(0, e.life / 28);
+    ctx.globalAlpha = Math.max(0, e.life / e.maxLife);
     ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
     ctx.fill();
-    if (e.life <= 0) effects.splice(effects.indexOf(e), 1);
+
+    if (e.life <= 0) effects.splice(i, 1);
   }
   ctx.globalAlpha = 1;
 }
@@ -243,9 +246,13 @@ function drawEffects() {
 function loop() {
   handleInput();
   drawArena();
+
   if (started) {
-    drawCharacter(p1, '#a855f7', '#f5d0fe');
-    drawCharacter(p2, '#34d399', '#d1fae5');
+    p1.updateAnimation();
+    p2.updateAnimation();
+
+    drawCharacter(p1, true);
+    drawCharacter(p2, false);
     drawEffects();
 
     if (p1.health <= 0) {
