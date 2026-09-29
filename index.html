@@ -1,62 +1,60 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Hero Academia - Fighting Game</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hero Clash</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <div id="gameContainer">
-        <canvas id="gameCanvas" width="1200" height="600"></canvas>
-        
-        <div id="hud">
-            <div id="player1Info" class="playerInfo">
-                <h3>All For One</h3>
-                <div class="healthBar">
-                    <div id="player1Health" class="health"></div>
-                </div>
-                <div class="stats">
-                    <p>Quirks: <span id="quirksCount1">100</span></p>
-                    <p>Mode: <span id="mode1">Normal</span></p>
-                </div>
-            </div>
-
-            <div id="gameStatus">
-                <h2 id="statusText">FIGHT START!</h2>
-            </div>
-
-            <div id="player2Info" class="playerInfo">
-                <h3>One For All</h3>
-                <div class="healthBar">
-                    <div id="player2Health" class="health"></div>
-                </div>
-                <div class="stats">
-                    <p>Vestiges: <span id="vestiges">8</span></p>
-                    <p>Power: <span id="ofa-power">100%</span></p>
-                </div>
-            </div>
-        </div>
-
-        <div id="controls">
-            <p><strong>All For One (P1):</strong> W/A/S/D - Move | Q - Quirk Storage | E - Air Blast | R - Super Strength | T - Super Speed | Y - Take Over Mode</p>
-            <p><strong>One For All (P2):</strong> Arrow Keys - Move | 1-5 - Moves | U - Vestige Connection | I - Vestige Combo</p>
-        </div>
-
-        <div id="quirksPanel" class="panel">
-            <h3>Quirk Combinations Available</h3>
-            <div id="quirksDisplay"></div>
-        </div>
-
-        <div id="vestigesPanel" class="panel">
-            <h3>Vestiges</h3>
-            <div id="vestigesDisplay"></div>
-        </div>
+  <div id="game-shell">
+    <div id="menu" class="menu-overlay visible">
+      <div class="menu-panel">
+        <h1>Hero Clash</h1>
+        <h2>All For One vs One For All</h2>
+        <button id="start-button">Start Battle</button>
+        <button id="reset-button" class="secondary">Reset Match</button>
+      </div>
     </div>
 
-    <script src="sprites.js"></script>
-    <script src="quirks.js"></script>
-    <script src="characters.js"></script>
-    <script src="game.js"></script>
+    <canvas id="game" width="1200" height="620"></canvas>
+
+    <div id="hud">
+      <div class="panel">
+        <h3>ALL FOR ONE</h3>
+        <div class="bar"><div id="p1-health" class="fill red"></div></div>
+        <p>Health: <span id="p1-health-text">100</span></p>
+        <p>Mode: <span id="p1-mode">Normal</span></p>
+        <p>Quirks: <span id="p1-quirks">25</span></p>
+      </div>
+
+      <div class="middle-panel">
+        <h2 id="status">FIGHT!</h2>
+      </div>
+
+      <div class="panel">
+        <h3>ONE FOR ALL</h3>
+        <div class="bar"><div id="p2-health" class="fill green"></div></div>
+        <p>Health: <span id="p2-health-text">100</span></p>
+        <p>Power: <span id="p2-power">100%</span></p>
+        <p>Vestiges: <span id="p2-vestiges">8</span></p>
+      </div>
+    </div>
+
+    <div id="bottom-panel">
+      <div class="controls-box">
+        <h4>ALL FOR ONE</h4>
+        <p>WASD move • Q storage • E air blast • R strength • T speed • Y takeover</p>
+      </div>
+      <div class="controls-box">
+        <h4>ONE FOR ALL</h4>
+        <p>Arrow keys move • 1-5 attacks • U advice • I combo</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="quirks.js"></script>
+  <script src="characters.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>

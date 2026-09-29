@@ -1,21 +1,43 @@
-const canvas = document.getElementById('gameCanvas');
+const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 
 const ui = {
-  p1Health: document.getElementById('player1Health'),
-  p2Health: document.getElementById('player2Health'),
-  p1Mode: document.getElementById('mode1'),
-  p1Quirks: document.getElementById('quirksCount1'),
-  p2Power: document.getElementById('ofa-power'),
-  p2Vestiges: document.getElementById('vestiges'),
-  status: document.getElementById('statusText')
+  p1Health: document.getElementById('p1-health'),
+  p2Health: document.getElementById('p2-health'),
+  p1Mode: document.getElementById('p1-mode'),
+  p1Quirks: document.getElementById('p1-quirks'),
+  p2Power: document.getElementById('p2-power'),
+  p2Vestiges: document.getElementById('p2-vestiges'),
+  status: document.getElementById('status')
 };
+
+const menu = document.getElementById('menu');
+const startButton = document.getElementById('start-button');
+const resetButton = document.getElementById('reset-button');
 
 const keys = {};
 const effects = [];
+let started = false;
 
 const p1 = new AllForOne(180, 420);
 const p2 = new OneForAll(940, 420);
+
+function resetBattle() {
+  p1.health = 100;
+  p1.maxHealth = 100;
+  p1.mode = 'Normal';
+  p1.speed = 5;
+  p2.health = 100;
+  p2.maxHealth = 100;
+  p2.power = 100;
+  p1.x = 180;
+  p1.y = 420;
+  p2.x = 940;
+  p2.y = 420;
+  statusText = 'FIGHT!';
+  ui.status.textContent = 'FIGHT!';
+  updateHud();
+}
 
 function spawnEffect(x, y, color, radius = 20, type = 'burst') {
   effects.push({ x, y, color, radius, type, life: 28 });
@@ -31,6 +53,8 @@ function updateHud() {
 }
 
 function handleInput() {
+  if (!started) return;
+
   if (keys['a']) p1.x = Math.max(40, p1.x - p1.speed);
   if (keys['d']) p1.x = Math.min(canvas.width / 2 - 120, p1.x + p1.speed);
   if (keys['w']) p1.y = Math.max(260, p1.y - 8);
@@ -42,22 +66,22 @@ function handleInput() {
   if (keys['ArrowDown']) p2.y = Math.min(470, p2.y + 8);
 
   if (keys['e']) {
-    p1.useQuirk('airblast');
     p2.health = Math.max(0, p2.health - 15);
+    p1.mode = 'Air Blast';
     ui.status.textContent = 'AIR BLAST!';
     spawnEffect(p1.x + 90, p1.y + 50, '#7dd3fc', 30, 'burst');
   }
 
   if (keys['r']) {
-    p1.useQuirk('strength');
     p2.health = Math.max(0, p2.health - 18);
+    p1.mode = 'Super Strength';
     ui.status.textContent = 'SUPER STRENGTH!';
     spawnEffect(p1.x + 90, p1.y + 50, '#f97316', 28, 'burst');
   }
 
   if (keys['t']) {
-    p1.useQuirk('speed');
     p1.speed = 8;
+    p1.mode = 'Super Speed';
     ui.status.textContent = 'SUPER SPEED!';
     spawnEffect(p1.x + 80, p1.y + 50, '#a78bfa', 20, 'burst');
   } else {
@@ -67,6 +91,7 @@ function handleInput() {
   if (keys['y']) {
     p1.takeOverMode();
     p2.health = Math.max(0, p2.health - 25);
+    p1.mode = 'Take Over';
     ui.status.textContent = 'TAKE OVER MODE!';
     spawnEffect(p1.x + 90, p1.y + 50, '#c084fc', 40, 'burst');
   }
@@ -87,7 +112,7 @@ function handleInput() {
 
   if (keys['i']) {
     const damage = p2.vestigeCombo(p1);
-    ui.status.textContent = `VESTIGE COMBO! ${damage} damage`; 
+    ui.status.textContent = `VESTIGE COMBO! ${damage} damage`;
     spawnEffect(p2.x - 40, p2.y + 50, '#00f5d4', 32, 'burst');
   }
 }
@@ -96,7 +121,7 @@ function drawArena() {
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
   sky.addColorStop(0, '#0f172a');
   sky.addColorStop(0.5, '#12283d');
-  sky.addColorStop(1, '#1b2a3b');
+  sky.addColorStop(1, '#1f334b');
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -107,35 +132,25 @@ function drawArena() {
     ctx.fillStyle = i % 2 === 0 ? '#1a2d44' : '#20344a';
     ctx.fillRect(i * 60, 500, 50, 120);
   }
-
-  ctx.fillStyle = 'rgba(255,255,255,0.08)';
-  for (let i = 0; i < 40; i++) {
-    ctx.fillRect((i * 31) % canvas.width, (i * 17) % 250, 2, 2);
-  }
 }
 
-function drawCharacter(ch, accent) {
+function drawCharacter(ch, accent, faceColor = '#f4d29d') {
   ctx.save();
   ctx.translate(ch.x, ch.y);
 
-  // glow
   ctx.fillStyle = accent;
   ctx.globalAlpha = 0.18;
   ctx.fillRect(-10, 0, ch.w + 20, ch.h + 20);
 
-  // face
-  ctx.globalAlpha = 1;
-  ctx.fillStyle = '#f4d29d';
+  ctx.fillStyle = faceColor;
   ctx.beginPath();
   ctx.arc(ch.w / 2, 30, 18, 0, Math.PI * 2);
   ctx.fill();
 
-  // body
   ctx.fillStyle = ch.color;
   ctx.fillRect(ch.w * 0.28, 52, ch.w * 0.44, 52);
 
-  // cape / energy trail
-  ctx.fillStyle = ch.name === 'All For One' ? '#7c3aed' : '#10b981';
+  ctx.fillStyle = accent;
   ctx.beginPath();
   ctx.moveTo(ch.w * 0.25, 58);
   ctx.lineTo(0, 100);
@@ -150,7 +165,6 @@ function drawCharacter(ch, accent) {
   ctx.lineTo(ch.w * 0.65, ch.h);
   ctx.fill();
 
-  // eyes
   ctx.fillStyle = '#111827';
   ctx.fillRect(ch.w * 0.38, 23, 8, 8);
   ctx.fillRect(ch.w * 0.54, 23, 8, 8);
@@ -159,28 +173,25 @@ function drawCharacter(ch, accent) {
 }
 
 function drawEffects() {
-  for (let i = effects.length - 1; i >= 0; i--) {
-    const e = effects[i];
-    e.radius += 2;
+  const arr = effects.slice();
+  for (let i = arr.length - 1; i >= 0; i--) {
+    const e = arr[i];
     e.life -= 1;
-
     ctx.beginPath();
     ctx.fillStyle = e.color;
     ctx.globalAlpha = Math.max(0, e.life / 28);
     ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
     ctx.fill();
-
-    if (e.life <= 0) effects.splice(i, 1);
+    if (e.life <= 0) effects.splice(effects.indexOf(e), 1);
   }
-
   ctx.globalAlpha = 1;
 }
 
 function loop() {
   handleInput();
   drawArena();
-  drawCharacter(p1, '#c084fc');
-  drawCharacter(p2, '#34d399');
+  drawCharacter(p1, '#a855f7', '#f5d0fe');
+  drawCharacter(p2, '#34d399', '#d1fae5');
   drawEffects();
 
   if (p1.health <= 0) {
@@ -194,7 +205,26 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+function startGame() {
+  started = true;
+  resetBattle();
+  menu.classList.add('hidden');
+}
+
+function showMenu() {
+  started = false;
+  menu.classList.remove('hidden');
+  resetBattle();
+}
+
+startButton.addEventListener('click', startGame);
+resetButton.addEventListener('click', showMenu);
+
 document.addEventListener('keydown', (e) => {
+  if (!started && e.key === 'Enter') {
+    startGame();
+    return;
+  }
   keys[e.key] = true;
 });
 
