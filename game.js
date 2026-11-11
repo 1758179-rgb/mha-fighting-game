@@ -8,7 +8,9 @@ const ui = {
   p1Quirks: document.getElementById('p1-quirks'),
   p2Power: document.getElementById('p2-power'),
   p2Vestiges: document.getElementById('p2-vestiges'),
-  status: document.getElementById('status')
+  status: document.getElementById('status'),
+  p1HealthText: document.getElementById('p1-health-text'),
+  p2HealthText: document.getElementById('p2-health-text')
 };
 
 const menu = document.getElementById('menu');
@@ -21,6 +23,14 @@ let started = false;
 
 const p1 = new AllForOne(180, 420);
 const p2 = new OneForAll(940, 420);
+
+function setStatus(message) {
+  ui.status.textContent = message;
+}
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
 
 function resetBattle() {
   p1.health = 100;
@@ -38,7 +48,7 @@ function resetBattle() {
   p2.y = 420;
   p2.spriteSheet = new SpriteSheet('oneforall');
 
-  ui.status.textContent = 'FIGHT!';
+  setStatus('FIGHT!');
   updateHud();
 }
 
@@ -47,12 +57,16 @@ function spawnEffect(x, y, color, radius = 20, type = 'burst') {
 }
 
 function updateHud() {
-  ui.p1Health.style.width = `${(p1.health / p1.maxHealth) * 100}%`;
-  ui.p2Health.style.width = `${(p2.health / p2.maxHealth) * 100}%`;
+  ui.p1Health.style.width = `${clamp((p1.health / p1.maxHealth) * 100, 0, 100)}%`;
+  ui.p2Health.style.width = `${clamp((p2.health / p2.maxHealth) * 100, 0, 100)}%`;
+
   ui.p1Mode.textContent = p1.mode;
   ui.p1Quirks.textContent = p1.quirkCount;
   ui.p2Power.textContent = `${p2.power}%`;
   ui.p2Vestiges.textContent = p2.vestiges.length;
+
+  ui.p1HealthText.textContent = `${Math.round(p1.health)}`;
+  ui.p2HealthText.textContent = `${Math.round(p2.health)}`;
 }
 
 function handleInput() {
@@ -71,120 +85,109 @@ function handleInput() {
   if (keys['e']) {
     p1.attack(p2, 15, '#7dd3fc');
     p1.mode = 'Air Blast';
-    ui.status.textContent = 'AIR BLAST!';
+    setStatus('AIR BLAST!');
   }
-
   if (keys['r']) {
     p1.attack(p2, 18, '#f97316');
     p1.mode = 'Super Strength';
-    ui.status.textContent = 'SUPER STRENGTH!';
+    setStatus('SUPER STRENGTH!');
   }
-
   if (keys['t']) {
     p1.speed = 8;
     p1.mode = 'Super Speed';
-    ui.status.textContent = 'SUPER SPEED!';
+    setStatus('SUPER SPEED!');
     spawnEffect(p1.x + 80, p1.y + 50, '#a78bfa', 20, 'burst');
   } else {
     p1.speed = 5;
   }
-
   if (keys['y']) {
     p1.takeOverMode();
     p2.health = Math.max(0, p2.health - 25);
     p1.mode = 'Take Over';
-    ui.status.textContent = 'TAKE OVER MODE!';
+    setStatus('TAKE OVER MODE!');
     spawnEffect(p1.x + 90, p1.y + 50, '#c084fc', 40, 'burst');
   }
-
   if (keys['q']) {
-    ui.status.textContent = 'QUIRK STORAGE: ' + p1.quirkStorage.slice(0, 10).join(', ');
+    setStatus('QUIRK STORAGE: ' + p1.quirkStorage.slice(0, 10).join(', '));
   }
-
-  if (keys['1']) { p2.attack(p1, 12, '#7ef9a9'); ui.status.textContent = 'ONE FOR ALL SMASH'; }
-  if (keys['2']) { p2.attack(p1, 14, '#00f5d4'); ui.status.textContent = 'AIR BURST'; }
-  if (keys['3']) { p2.attack(p1, 17, '#90f1ef'); ui.status.textContent = 'VESTIGE BREAKER'; }
-  if (keys['4']) { p2.attack(p1, 19, '#60a5fa'); ui.status.textContent = 'LIGHTNING RUSH'; }
-  if (keys['5']) { p2.attack(p1, 22, '#7ef9a9'); ui.status.textContent = 'SPIRITUAL BURST'; }
-
-  if (keys['u']) {
-    ui.status.textContent = p2.spiritualAdvice();
-  }
-
+  if (keys['1']) { p2.attack(p1, 12, '#7ef9a9'); setStatus('ONE FOR ALL SMASH'); }
+  if (keys['2']) { p2.attack(p1, 14, '#00f5d4'); setStatus('AIR BURST'); }
+  if (keys['3']) { p2.attack(p1, 17, '#90f1ef'); setStatus('VESTIGE BREAKER'); }
+  if (keys['4']) { p2.attack(p1, 19, '#60a5fa'); setStatus('LIGHTNING RUSH'); }
+  if (keys['5']) { p2.attack(p1, 22, '#7ef9a9'); setStatus('SPIRITUAL BURST'); }
+  if (keys['u']) setStatus(p2.spiritualAdvice());
   if (keys['i']) {
     const damage = p2.vestigeCombo(p1);
-    ui.status.textContent = `VESTIGE COMBO! ${Math.round(damage)} damage`;
+    setStatus(`VESTIGE COMBO! ${Math.round(damage)} damage`);
     spawnEffect(p2.x - 40, p2.y + 50, '#00f5d4', 32, 'burst');
   }
 }
 
 function drawArena() {
   const sky = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  sky.addColorStop(0, '#0f172a');
-  sky.addColorStop(0.5, '#12283d');
-  sky.addColorStop(1, '#1f334b');
+  sky.addColorStop(0, '#081421');
+  sky.addColorStop(0.5, '#11314e');
+  sky.addColorStop(1, '#1b3d5d');
   ctx.fillStyle = sky;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const arenaCenterX = canvas.width / 2;
-  const arenaCenterY = 300;
-  const outerR = 270;
-  const innerR = 170;
+  const centerX = canvas.width / 2;
+  const centerY = 290;
+  const outerRing = 260;
+  const innerRing = 170;
 
-  ctx.fillStyle = '#2ca54c';
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
   ctx.beginPath();
-  ctx.arc(arenaCenterX, arenaCenterY, innerR, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, outerRing + 18, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#5a4f9f';
+  ctx.fillStyle = '#5d4bc1';
   ctx.beginPath();
-  ctx.arc(arenaCenterX, arenaCenterY, outerR, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, outerRing, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.fillStyle = '#2c2c2c';
-  for (let i = 0; i < 52; i++) {
-    const angle = (Math.PI * 2 * i) / 52;
-    const r = outerR - 20;
-    const sx = arenaCenterX + Math.cos(angle) * r;
-    const sy = arenaCenterY + Math.sin(angle) * r;
-    const ex = arenaCenterX + Math.cos(angle) * (outerR + 34);
-    const ey = arenaCenterY + Math.sin(angle) * (outerR + 34);
-    ctx.beginPath();
-    ctx.moveTo(sx, sy);
-    ctx.lineTo(ex, ey);
-    ctx.strokeStyle = '#2d2d2d';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-  }
-
-  ctx.fillStyle = '#2d2d2d';
+  ctx.fillStyle = '#0f1d2b';
   ctx.beginPath();
-  ctx.arc(arenaCenterX, arenaCenterY, outerR + 18, 0, Math.PI * 2);
+  ctx.arc(centerX, centerY, innerRing, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.fillStyle = '#22313f';
   ctx.fillRect(0, 500, canvas.width, 120);
 
-  ctx.strokeStyle = '#d1d5db';
+  ctx.fillStyle = 'rgba(255,255,255,0.08)';
+  for (let i = 0; i < 80; i++) {
+    const angle = (Math.PI * 2 * i) / 80;
+    const r = outerRing - 12;
+    const sx = centerX + Math.cos(angle) * r;
+    const sy = centerY + Math.sin(angle) * r;
+    const ex = centerX + Math.cos(angle) * (outerRing + 32);
+    const ey = centerY + Math.sin(angle) * (outerRing + 32);
+    ctx.beginPath();
+    ctx.moveTo(sx, sy);
+    ctx.lineTo(ex, ey);
+    ctx.strokeStyle = 'rgba(255,255,255,0.16)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  for (let i = 0; i < 180; i++) {
+    const angle = (Math.PI * 2 * i) / 180;
+    const dist = 150 + (i % 5) * 12;
+    const x = centerX + Math.cos(angle) * dist;
+    const y = centerY + Math.sin(angle) * dist;
+    ctx.fillStyle = i % 2 === 0 ? '#ffd166' : '#fcae4e';
+    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
+  }
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.14)';
   ctx.lineWidth = 3;
   ctx.beginPath();
   ctx.moveTo(0, 500);
   ctx.lineTo(canvas.width, 500);
   ctx.stroke();
 
-  ctx.fillStyle = '#0b1220';
-  ctx.beginPath();
-  ctx.arc(arenaCenterX, arenaCenterY, innerR - 22, 0, Math.PI * 2);
-  ctx.fill();
-
-  for (let i = 0; i < 200; i++) {
-    const angle = (Math.PI * 2 * i) / 200;
-    const dist = 160 + (i % 3) * 16;
-    const x = arenaCenterX + Math.cos(angle) * dist;
-    const y = arenaCenterY + Math.sin(angle) * dist;
-    ctx.fillStyle = i % 2 === 0 ? '#fbbf24' : '#f59e0b';
-    ctx.fillRect(x - 1.5, y - 1.5, 3, 3);
-  }
+  ctx.fillStyle = 'rgba(0,0,0,0.22)';
+  ctx.fillRect(0, 0, canvas.width, 100);
 }
 
 function drawCharacter(ch, isFacingRight = true) {
@@ -196,33 +199,27 @@ function drawCharacter(ch, isFacingRight = true) {
     ctx.translate(-ch.w, 0);
   }
 
-  // Draw glow
   ctx.fillStyle = ch.glow;
-  ctx.globalAlpha = 0.15;
+  ctx.globalAlpha = 0.18;
   ctx.beginPath();
-  ctx.arc(ch.w / 2, ch.h / 2, ch.w / 1.5, 0, Math.PI * 2);
+  ctx.arc(ch.w / 2, ch.h / 2, ch.w / 1.6, 0, Math.PI * 2);
   ctx.fill();
-  ctx.globalAlpha = 1;
 
-  // Draw character body (animated)
   const frame = ch.spriteSheet.getCurrentFrame();
   if (frame) {
     ctx.fillStyle = ch.color;
     ctx.globalAlpha = 0.95;
     ctx.fillRect(5, 10, ch.w - 10, ch.h - 20);
-    ctx.globalAlpha = 1;
   }
 
-  // Draw character details
   ctx.fillStyle = '#f4d29d';
   ctx.beginPath();
-  ctx.arc(ch.w / 2, 25, 16, 0, Math.PI * 2);
+  ctx.arc(ch.w / 2, 24, 16, 0, Math.PI * 2);
   ctx.fill();
 
-  // Eyes
   ctx.fillStyle = '#111827';
-  ctx.fillRect(ch.w * 0.35, 20, 6, 6);
-  ctx.fillRect(ch.w * 0.59, 20, 6, 6);
+  ctx.fillRect(ch.w * 0.34, 19, 6, 6);
+  ctx.fillRect(ch.w * 0.6, 19, 6, 6);
 
   ctx.restore();
 }
@@ -256,12 +253,12 @@ function loop() {
     drawEffects();
 
     if (p1.health <= 0) {
-      ui.status.textContent = 'ONE FOR ALL WINS!';
+      setStatus('ONE FOR ALL WINS!');
       started = false;
       menu.classList.remove('hidden');
     }
     if (p2.health <= 0) {
-      ui.status.textContent = 'ALL FOR ONE WINS!';
+      setStatus('ALL FOR ONE WINS!');
       started = false;
       menu.classList.remove('hidden');
     }
