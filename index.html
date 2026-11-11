@@ -3,41 +3,104 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hero Clash</title>
+  <title>Hero Clash Arena</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div id="game-shell">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">◆</span>
+        <div>
+          <p class="eyebrow">Arena Match</p>
+          <h1>Hero Clash</h1>
+        </div>
+      </div>
+
+      <div class="match-badges">
+        <span class="badge pill left">ALL FOR ONE</span>
+        <span class="badge pill center">VS</span>
+        <span class="badge pill right">ONE FOR ALL</span>
+      </div>
+    </header>
+
     <div id="menu" class="menu-overlay visible">
       <div class="menu-panel">
-        <h1>Hero Clash</h1>
-        <h2>All For One vs One For All</h2>
+        <div class="menu-top">
+          <span class="mini-tag">Live Battle</span>
+          <h2>Hero Arena</h2>
+        </div>
+
+        <div class="hero-preview">
+          <div class="hero-card left">
+            <span class="card-name">All For One</span>
+            <span class="card-type">Quirk Master</span>
+          </div>
+          <div class="versus">VS</div>
+          <div class="hero-card right">
+            <span class="card-name">One For All</span>
+            <span class="card-type">Symbol of Hope</span>
+          </div>
+        </div>
+
         <button id="start-button">Start Battle</button>
         <button id="reset-button" class="secondary">Reset Match</button>
       </div>
     </div>
 
-    <canvas id="game" width="1200" height="620"></canvas>
+    <div class="battle-stage">
+      <aside class="fighter-panel left-panel">
+        <div class="fighter-header">
+          <span class="panel-title">ALL FOR ONE</span>
+          <span class="panel-tag">Quirk User</span>
+        </div>
 
-    <div id="hud">
-      <div class="panel">
-        <h3>ALL FOR ONE</h3>
-        <div class="bar"><div id="p1-health" class="fill red"></div></div>
-        <p>Health: <span id="p1-health-text">100</span></p>
-        <p>Mode: <span id="p1-mode">Normal</span></p>
-        <p>Quirks: <span id="p1-quirks">25</span></p>
+        <div class="health-wrap">
+          <div class="health-bar">
+            <div id="p1-health" class="fill red"></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div><span>Health</span><strong id="p1-health-text">100</strong></div>
+          <div><span>Mode</span><strong id="p1-mode">Normal</strong></div>
+          <div><span>Quirks</span><strong id="p1-quirks">25</strong></div>
+        </div>
+      </aside>
+
+      <div class="arena-wrap">
+        <canvas id="game" width="1200" height="620"></canvas>
       </div>
 
-      <div class="middle-panel">
-        <h2 id="status">FIGHT!</h2>
+      <aside class="fighter-panel right-panel">
+        <div class="fighter-header">
+          <span class="panel-title">ONE FOR ALL</span>
+          <span class="panel-tag">Power Core</span>
+        </div>
+
+        <div class="health-wrap">
+          <div class="health-bar">
+            <div id="p2-health" class="fill green"></div>
+          </div>
+        </div>
+
+        <div class="stat-grid">
+          <div><span>Health</span><strong id="p2-health-text">100</strong></div>
+          <div><span>Power</span><strong id="p2-power">100%</strong></div>
+          <div><span>Vestiges</span><strong id="p2-vestiges">8</strong></div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="status-bar">
+      <div class="status-left">
+        <span class="live-dot"></span>
+        <strong id="status">FIGHT!</strong>
       </div>
 
-      <div class="panel">
-        <h3>ONE FOR ALL</h3>
-        <div class="bar"><div id="p2-health" class="fill green"></div></div>
-        <p>Health: <span id="p2-health-text">100</span></p>
-        <p>Power: <span id="p2-power">100%</span></p>
-        <p>Vestiges: <span id="p2-vestiges">8</span></p>
+      <div class="status-modes">
+        <span class="chip">Arena: City Rooftop</span>
+        <span class="chip">Style: Ultra Rumble</span>
       </div>
     </div>
 
@@ -55,6 +118,7 @@
 
   <script src="quirks.js"></script>
   <script src="characters.js"></script>
+  <script src="sprites.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
